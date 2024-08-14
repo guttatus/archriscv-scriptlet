@@ -19,10 +19,11 @@ msg "Starting qemu"
 qemu-system-riscv64 \
     -nographic \
     -machine virt \
-    -smp 8 \
+    -smp 1 \
     -m 4G \
     -netdev user,id=n0 -device virtio-net,netdev=n0 \
-    -bios ./opensbi_fw_payload.bin \
+    -bios ./u-boot-spl  \
+    -device loader,file=./u-boot.itb,addr=0x80200000 \
     -device virtio-blk-device,drive=hd0 \
     -object rng-random,filename=/dev/urandom,id=rng0 \
     -device virtio-rng-device,rng=rng0 \

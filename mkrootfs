@@ -61,8 +61,8 @@ sudo pacstrap \
     ./rootfs \
     base
 
-msg "Set default mirror to https://riscv.mirror.pkgbuild.com"
-sudo sed -E -i 's|#(Server = https://riscv\.mirror\.pkgbuild\.com/repo/\$repo)|\1|' ./rootfs/etc/pacman.d/mirrorlist
+msg "Set default mirror to https://mirror.iscas.ac.cn/archriscv/repo"
+sudo sed -E -i 's|#(Server = https://mirror\.iscas\.ac\.cn/archriscv/repo/\$repo)|\1|' ./rootfs/etc/pacman.d/mirrorlist
 
 msg "Clean up pacman package cache..."
 yes y | sudo pacman \

@@ -17,8 +17,7 @@ kernel=linux
 kernel_suffix=""
 cmdline=""
 
-uboot_version=v2023.10
-opensbi_version=v1.3.1
+uboot_version=v2024.04
 
 show_help() {
 cat << EOF
@@ -31,7 +30,7 @@ Create Arch RISC-V distro image.
 
     -h          display this help and exit
     -f          use fixed password instead of using systemd-firstboot to ask
-    -d          only build the disk image and omit building OpenSBI/U-Boot
+    -d          only build the disk image and omit building RustSBI/U-Boot
     -p PASSWORD set root password to PASSWORD instead of passwd in rootfs
     -r ROOTFS   specify rootfs file name
     -t FSTYPE   specify rootfs filesystem type (default: ext4)
@@ -89,6 +88,24 @@ parse-args "$@"
 
 if [ $build_firmware == 1 ]
 then
+    msg "Building RustSBI Prototyper..."
+
+    if [[ -d prototyper ]]; then
+        pushd prototyper
+        git checkout HEAD -- ':(top)'
+        git fetch origin
+        popd
+    else
+        git clone --filter=blob:none https://github.com/rustsbi/prototyper
+    fi
+    pushd prototyper
+    
+    cargo build --release
+    rust-objcopy \
+        --binary-architecture=riscv64 ./target/riscv64imac-unknown-none-elf/release/rustsbi-prototyper \
+        -O binary target/riscv64imac-unknown-none-elf/release/rustsbi-prototyper.bin
+    popd
+
     msg "Building U-Boot..."
 
     if [[ -d u-boot ]]; then
@@ -104,38 +121,19 @@ then
 
     make \
         CROSS_COMPILE=riscv64-linux-gnu- \
-        qemu-riscv64_smode_defconfig
+        qemu-riscv64_spl_defconfig
     ./scripts/config \
         -e CMD_BTRFS -e FS_BTRFS
     make \
         CROSS_COMPILE=riscv64-linux-gnu- \
         olddefconfig
-    make CROSS_COMPILE=riscv64-linux-gnu-
-    popd
-
-    msg "Building OpenSBI..."
-
-    if [[ -d opensbi ]]; then
-        pushd opensbi
-        git checkout HEAD -- ':(top)'
-        git fetch origin
-        git checkout $opensbi_version
-        popd
-    else
-        git clone --filter=blob:none -b $opensbi_version https://github.com/riscv-software-src/opensbi
-    fi
-    pushd opensbi
-
-    # If user set it, OpenSBI will failed to build.
-    unset PYTHONSAFEPATH
-
     make \
         CROSS_COMPILE=riscv64-linux-gnu- \
-        PLATFORM=generic \
-        FW_PAYLOAD_PATH=../u-boot/u-boot.bin
+        OPENSBI=../prototyper/target/riscv64imac-unknown-none-elf/release/rustsbi-prototyper.bin
     popd
 
-    cp ./opensbi/build/platform/generic/firmware/fw_payload.bin opensbi_fw_payload.bin
+    cp ./u-boot/spl/u-boot-spl u-boot-spl
+    cp ./u-boot/u-boot.itb     u-boot.itb
 fi
 
 if [[ $filename == *.qcow2 ]]
