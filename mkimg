@@ -100,10 +100,7 @@ then
     fi
     pushd prototyper
     
-    cargo build --release
-    rust-objcopy \
-        --binary-architecture=riscv64 ./target/riscv64imac-unknown-none-elf/release/rustsbi-prototyper \
-        -O binary target/riscv64imac-unknown-none-elf/release/rustsbi-prototyper.bin
+    cargo make bin
     popd
 
     msg "Building U-Boot..."
