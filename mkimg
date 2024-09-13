@@ -100,7 +100,7 @@ then
     fi
     pushd prototyper
     
-    cargo make bin
+    cargo make prototyper
     popd
 
     msg "Building U-Boot..."
