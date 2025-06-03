@@ -90,17 +90,17 @@ if [ $build_firmware == 1 ]
 then
     msg "Building RustSBI Prototyper..."
 
-    if [[ -d prototyper ]]; then
-        pushd prototyper
+    if [[ -d rustsbi ]]; then
+        pushd rustsbi
         git checkout HEAD -- ':(top)'
         git fetch origin
         popd
     else
-        git clone --filter=blob:none https://github.com/rustsbi/prototyper
+        git clone --filter=blob:none https://github.com/rustsbi/rustsbi
     fi
-    pushd prototyper
+    pushd rustsbi
     
-    cargo make prototyper
+    cargo prototyper
     popd
 
     msg "Building U-Boot..."
@@ -126,7 +126,7 @@ then
         olddefconfig
     make \
         CROSS_COMPILE=riscv64-linux-gnu- \
-        OPENSBI=../prototyper/target/riscv64imac-unknown-none-elf/release/rustsbi-prototyper.bin
+        OPENSBI=../rustsbi/target/riscv64imac-unknown-none-elf/release/rustsbi-prototyper.bin
     popd
 
     cp ./u-boot/spl/u-boot-spl u-boot-spl

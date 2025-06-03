@@ -5,3 +5,4 @@ rootfs/
 qcow2/
 u-boot/
 opensbi/
+rustsbi/
